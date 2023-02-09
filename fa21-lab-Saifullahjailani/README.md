@@ -1,0 +1,12 @@
+# fa21-lab
+0. For lab 0 brief click [here](https://inst.eecs.berkeley.edu/~cs61c/fa21/labs/lab00/)
+1. For lab 1 brief click [here](https://inst.eecs.berkeley.edu/~cs61c/fa21/labs/lab01/)
+2. For lab 2 brief click [here](https://inst.eecs.berkeley.edu/~cs61c/fa21/labs/lab02/)
+3. For lab 3 brief click [here](https://inst.eecs.berkeley.edu/~cs61c/fa21/labs/lab03/)
+4. For lab 4 brief click [here](https://inst.eecs.berkeley.edu/~cs61c/fa21/labs/lab04/)
+5. For lab 5 brief click [here](https://inst.eecs.berkeley.edu/~cs61c/fa21/labs/lab05/)
+6. For lab 6 brief click [here](https://inst.eecs.berkeley.edu/~cs61c/fa21/labs/lab06/)
+7. For lab 7 brief click [here](https://inst.eecs.berkeley.edu/~cs61c/fa21/labs/lab07/)
+8. For lab 8 brief click [here](https://inst.eecs.berkeley.edu/~cs61c/fa21/labs/lab08/)
+9. For lab 9 brief click [here](https://inst.eecs.berkeley.edu/~cs61c/fa21/labs/lab09/)
+10. For lab 10 brief click [here](https://inst.eecs.berkeley.edu/~cs61c/fa21/labs/lab10/)

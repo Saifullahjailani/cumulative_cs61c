@@ -1,0 +1,244 @@
+/*
+ * Include the provided hash table library.
+ */
+#include "hashtable.h"
+
+/*
+ * Include the header file.
+ */
+#include "philphix.h"
+
+/*
+ * Standard IO and file routines.
+ */
+#include <stdio.h>
+
+/*
+ * General utility routines (including malloc()).
+ */
+#include <stdlib.h>
+
+/*
+ * Character utility routines.
+ */
+#include <ctype.h>
+
+/*
+ * String utility routines.
+ */
+#include <string.h>
+
+/*
+ * This hash table stores the dictionary.
+ */
+#define INITIAL_BUFFER_SIZE 100
+
+typedef struct Buffer
+{
+    int bufferSize;
+    
+    char* buffer;
+    int size;
+
+} Buffer;
+
+
+/* Buffer Helper functions */
+
+/* Creates Buffer with INITIAL_BUFFER_SIZE */
+Buffer* createBuffer();
+/*Adds c to buffer*/
+void add(Buffer* buffer,char);
+HashTable *dictionary;
+
+
+
+/*
+ * The MAIN routine.  You can safely print debugging information
+ * to standard error (stderr) as shown and it will be ignored in 
+ * the grading process.
+ */
+#ifndef _PHILPHIX_UNITTEST
+int main(int argc, char **argv) {
+  if (argc != 2) {
+    fprintf(stderr, "Specify a dictionary\n");
+    return 1;
+  }
+  /*
+   * Allocate a hash table to store the dictionary.
+   */
+  fprintf(stderr, "Creating hashtable\n");
+  dictionary = createHashTable(0x61C, &stringHash, &stringEquals);
+
+  fprintf(stderr, "Loading dictionary %s\n", argv[1]);
+  readDictionary(argv[1]);
+  fprintf(stderr, "Dictionary loaded\n");
+
+  
+  fprintf(stderr, "Processing stdin\n");
+  processInput();
+
+  /*
+   * The MAIN function in C should always return 0 as a way of telling
+   * whatever program invoked this that everything went OK.
+   */
+ 
+  return 0;
+}
+#endif /* _PHILPHIX_UNITTEST */
+Buffer* createBuffer(){
+    Buffer *buffer = (Buffer*)malloc(sizeof(Buffer));
+    buffer->bufferSize = INITIAL_BUFFER_SIZE;
+    buffer->size = 0;
+    buffer->buffer = malloc(INITIAL_BUFFER_SIZE * sizeof(char));
+    return buffer;
+}
+
+
+void add(Buffer* buffer, char c){
+  if(buffer->size >= buffer->bufferSize){
+        char *data = realloc(buffer->buffer, 2 * buffer->bufferSize);
+        
+        if(!data){
+            fprintf(stderr, "allocation failed\n");
+        }
+        buffer->buffer = data;
+        buffer->bufferSize*=2;
+    }
+    buffer->buffer[buffer->size] = c;
+    buffer->size++;
+}
+
+char* bufferToString(Buffer *buffer){
+  char *string = malloc((buffer->size+1) * sizeof(char));
+  memcpy(string, buffer->buffer, buffer->size);
+  string[buffer->size + 1] = '\0';
+  buffer->size = 0;
+  return string;  
+  
+}
+
+void skipFreeSpace(FILE *stream){
+  char c;
+  while((c = getc(stream)) && (c == ' ' || c == '\t' || c== '\n')){
+  }
+  ungetc(c, stream);
+}
+
+/* Task 3 */
+void readDictionary(char *dictName) {
+FILE *file = fopen(dictName, "r");
+if(!file){
+  fprintf(stderr, "The file does not exists.");
+  exit(61);
+}
+  char c;
+  void* key; 
+  void *value;
+  Buffer *buff = createBuffer();
+  while ((c = getc(file)) != EOF)
+  {
+    add(buff, c);
+    if(c == ' ' || c == '\t'){
+      skipFreeSpace(file);
+      buff->size--;
+      key = bufferToString(buff);
+    }
+    if(c == '\n'){
+      skipFreeSpace(file);
+      buff->size--;
+      value = bufferToString(buff);
+      insertData(dictionary, key, value);
+    }
+  }
+  // Take care of if not new line
+  if(buff->size != 0){
+      value = bufferToString(buff);
+      insertData(dictionary, key, value);
+  }
+  fclose(file);
+  free(buff->buffer);
+  free(buff);
+}
+
+void putToBuff(Buffer *buff, char *c){
+  for(int i = 0; i < strlen(c); i++){
+    add(buff, c[i]);
+  }
+}
+
+int isAlphaNumeric(char c){
+  return (c <= 'z' && c >= 'a') 
+          || (c <= 'Z' && c >= 'A')
+          || (c <= '9' && c >= '0');
+}
+
+void transfer(Buffer *from, Buffer *to){
+  for(int i = 0; i < from->size;i++){
+    add(to, from->buffer[i]);
+  }
+  from->size = 0;
+}
+
+char* getValue(HashTable *dictionary, char* key){
+  char *value = findData(dictionary, key);
+  if(value){
+    return value;
+  }
+  int len = strlen(key);
+  char* second = malloc(len * sizeof(char));
+  second[0] = key[0];
+  second[len] = '\0';
+  for(int i = 1; i < len; i++){
+    second[i] = tolower(key[i]);
+  }
+  value = findData(dictionary, second);
+  if(value){
+    free(second);
+    return value;
+  }
+  second[0] = tolower(key[0]);
+  value = findData(dictionary, second);
+  if(value){
+    free(second);
+    return value;
+  }
+  return NULL;
+  }
+
+void process(FILE* in, FILE* out){
+  
+}
+
+/* Task 4 */
+void processInput() {
+  Buffer *buff = createBuffer();
+  Buffer *output = createBuffer();
+  char c;
+  int valid = 1;
+  while ((c = getc(stdin)) != EOF){ 
+    valid = valid && isAlphaNumeric(c);
+    add(buff, c);
+    if(!valid){
+      valid = 1;
+      transfer(buff, output);
+    } else{
+      add(buff, '\0');
+      char *value = getValue(dictionary, buff->buffer);
+      if(value){
+        putToBuff(output, value);
+        buff->size = 0;
+      } else{
+        buff->size--;
+      }
+    }
+    
+  }
+  add(output, '\0');
+  fprintf(stdout,"%s", output->buffer);
+  free(output->buffer);
+  free(output);
+  free(buff->buffer);
+  free(buff);
+
+}
